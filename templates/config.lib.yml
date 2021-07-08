@@ -50,6 +50,12 @@
 #!app.kubernetes.io/name: {{ include "capsule.name" . }}
 #!app.kubernetes.io/instance: {{ .Release.Name }}
 #!{{- end }}
+
+#@ def capsuleSelectorLabels():
+app.kubernetes.io/name: #@ capsuleName()
+app.kubernetes.io/instance: #@ [[ release.name ]]
+#@ end
+
 #!
 #!{{/*
 #!Create the name of the service account to use
