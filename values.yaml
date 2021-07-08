@@ -53,6 +53,12 @@ jobs:
     repository: quay.io/clastix/kubectl
     pullPolicy: IfNotPresent
     tag: "v1.20.7"
+proxy:
+  image:
+    repository: ""
+    pullPolicy: ""
+    tag: ""
+    
 mutatingWebhooksTimeoutSeconds: 30
 validatingWebhooksTimeoutSeconds: 30
 imagePullSecrets: []
