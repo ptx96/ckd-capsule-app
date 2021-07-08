@@ -1,0 +1,54 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "name", "fullName", "chart", "labels", "selectorLabels")
+
+#@ if data.values.podSecurityPolicy.enabled:
+kind: PodSecurityPolicy
+apiVersion: policy/v1beta1
+metadata:
+  name: #@ fullName()
+  labels: #@ labels()
+spec:
+  fsGroup:
+    rule: RunAsAny
+  hostPorts:
+  - max: 0
+    min: 0
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - secret
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: #@ fullName() + "-use-psp"
+  labels: #@ labels()
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - #@ fullName()
+  verbs:
+  - use
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: #@ fullName() + "-use-psp"
+  labels: #@ labels()
+  namespace: #@ data.values.release.namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: #@ fullName() + "-use-psp"
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: #@ serviceAccountName()
+#@ end
