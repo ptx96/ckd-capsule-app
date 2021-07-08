@@ -4,13 +4,13 @@
 #! This is a YAML-formatted file.
 #! Declare variables to be passed into your templates.
 chart:
+  name: capsule
   appVersion: 0.0.5
 manager:
   image:
     repository: quay.io/clastix/capsule
     pullPolicy: IfNotPresent
     tag: ''
-
   #! Specifies if the container should be started in hostNetwork mode.
   #!
   #! Required for use in some managed kubernetes clusters (such as AWS EKS) with custom

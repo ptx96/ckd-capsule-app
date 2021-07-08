@@ -1,11 +1,16 @@
 #@ load("@ytt:data", "data")
+#!
 #!{{/*
 #!Expand the name of the chart.
 #!*/}}
 #!{{- define "capsule.name" -}}
 #!{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 #!{{- end }}
-#!
+
+#@ def capsuleName():
+#@    return data.values.chart.name[0:63].rstrip("-")
+#@ end
+
 #!{{/*
 #!Create a default fully qualified app name.
 #!We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -23,7 +28,20 @@
 #!{{- end }}
 #!{{- end }}
 #!{{- end }}
-#!
+
+#@ def capsuleFullName():
+#@    if data.values.fullnameOverride:
+#@        return data.values.fullnameOverride[0:63].rstrip("-")
+#@    else:
+#@        name = data.values.chart.name+data.values.nameOverride
+#@        if name in data.values.chart.release.name:
+#@            return data.values.chart.release.name[0:63].rstrip("-")
+#@         else:
+#@            return (data.values.chart.release.name+"-"+name)[0:63].rstrip("-")
+#@         end
+#@    end
+#@ end
+
 #!{{/*
 #!Create chart name and version as used by the chart label.
 #!*/}}
@@ -51,10 +69,10 @@
 #!app.kubernetes.io/instance: {{ .Release.Name }}
 #!{{- end }}
 
-#@ def capsuleSelectorLabels():
-app.kubernetes.io/name: #@ capsuleName()
-app.kubernetes.io/instance: #@ [[ release.name ]]
-#@ end
+#!#@ def capsuleSelectorLabels():
+#!app.kubernetes.io/name: #@ capsuleName()
+#!app.kubernetes.io/instance: #@ [[ release.name ]]
+#!#@ end
 
 #!
 #!{{/*
