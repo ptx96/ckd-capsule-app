@@ -1,0 +1,133 @@
+#@ load("@ytt:data", "data")
+#!{{/*
+#!Expand the name of the chart.
+#!*/}}
+#!{{- define "capsule.name" -}}
+#!{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+#!{{- end }}
+#!
+#!{{/*
+#!Create a default fully qualified app name.
+#!We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+#!If release name contains chart name it will be used as a full name.
+#!*/}}
+#!{{- define "capsule.fullname" -}}
+#!{{- if .Values.fullnameOverride }}
+#!{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+#!{{- else }}
+#!{{- $name := default .Chart.Name .Values.nameOverride }}
+#!{{- if contains $name .Release.Name }}
+#!{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+#!{{- else }}
+#!{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+#!{{- end }}
+#!{{- end }}
+#!{{- end }}
+#!
+#!{{/*
+#!Create chart name and version as used by the chart label.
+#!*/}}
+#!{{- define "capsule.chart" -}}
+#!{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+#!{{- end }}
+#!
+#!{{/*
+#!Common labels
+#!*/}}
+#!{{- define "capsule.labels" -}}
+#!helm.sh/chart: {{ include "capsule.chart" . }}
+#!{{ include "capsule.selectorLabels" . }}
+#!{{- if .Chart.AppVersion }}
+#!app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+#!{{- end }}
+#!app.kubernetes.io/managed-by: {{ .Release.Service }}
+#!{{- end }}
+#!
+#!{{/*
+#!Selector labels
+#!*/}}
+#!{{- define "capsule.selectorLabels" -}}
+#!app.kubernetes.io/name: {{ include "capsule.name" . }}
+#!app.kubernetes.io/instance: {{ .Release.Name }}
+#!{{- end }}
+#!
+#!{{/*
+#!Create the name of the service account to use
+#!*/}}
+#!{{- define "capsule.serviceAccountName" -}}
+#!{{- if .Values.serviceAccount.create }}
+#!{{- default (include "capsule.fullname" .) .Values.serviceAccount.name }}
+#!{{- else }}
+#!{{- default "default" .Values.serviceAccount.name }}
+#!{{- end }}
+#!{{- end }}
+---
+#!{{/*
+#!Create the manager fully-qualified Docker image to use
+#!*/}}
+#!{{- define "capsule.managerFullyQualifiedDockerImage" -}}
+#!{{- printf "%s:%s" .Values.manager.image.repository ( .Values.manager.image.tag | default (printf "v%s" .Chart.AppVersion) ) -}}
+#!{{- end }}
+
+#@ def capsuleManagerFullyQualifiedDockerImage():
+#@   if data.values.manager.image.tag:
+#@   return data.values.manager.image.repository+":"+data.values.manager.image.tag
+#@   else:
+#@   return data.values.manager.image.repository+":"+data.values.chart.appVersion
+#@   end
+#@ end
+
+#!{{/*
+#!Create the proxy fully-qualified Docker image to use
+#!*/}}
+#!{{- define "capsule.proxyFullyQualifiedDockerImage" -}}
+#!{{- printf "%s:%s" .Values.proxy.image.repository .Values.proxy.image.tag -}}
+#!{{- end }}
+
+#@ def capsuleProxyFullyQualifiedDockerImage():
+#@   return data.values.proxy.image.repository+":"+data.values.proxy.image.tag
+#@ end
+
+#!{{/*
+#!Create the jobs fully-qualified Docker image to use
+#!*/}}
+#!{{- define "capsule.jobsFullyQualifiedDockerImage" -}}
+#!{{- printf "%s:%s" .Values.jobs.image.repository .Values.jobs.image.tag -}}
+#!{{- end }}
+
+#@ def capsuleJobsFullyQualifiedDockerImage():
+#@   return data.values.jobs.image.repository+":"+data.values.jobs.image.tag
+#@ end
+
+#!#!{{/*
+#!#!Create the Capsule Deployment name to use
+#!#!*/}}
+#!#!{{- define "capsule.deploymentName" -}}
+#!#!{{- printf "%s-controller-manager" (include "capsule.fullname" .) -}}
+#!#!{{- end }}
+#!
+#!#@ def capsuleDeploymentName():
+#!#@   return capsuleFullname()+"-controller-manager"
+#!#@ end
+#!
+#!#!{{/*
+#!#!Create the Capsule CA Secret name to use
+#!#!*/}}
+#!#!{{- define "capsule.secretCaName" -}}
+#!#!{{- printf "%s-ca" (include "capsule.fullname" .) -}}
+#!#!{{- end }}
+#!
+#!#@ def capsuleSecretName():
+#!#@   return capsuleFullname()+"-ca"
+#!#@ end
+#!
+#!#!{{/*
+#!#!Create the Capsule TLS Secret name to use
+#!#!*/}}
+#!#!{{- define "capsule.secretTlsName" -}}
+#!#!{{- printf "%s-tls" (include "capsule.fullname" .) -}}
+#!#!{{- end }}
+#!
+#!#@ def capsuleSecretTlsName():
+#!#@   return capsuleFullname()+"-tls"
+#!#@ end
