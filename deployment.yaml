@@ -51,15 +51,12 @@ spec:
             - name: metrics
               containerPort: 8080
               protocol: TCP
-          livenessProbe:
-            #@ data.values.manager.livenessProbe
-          readinessProbe:
-            #@ data.values.manager.readinessProbe
+          livenessProbe: #@ data.values.manager.livenessProbe
+          readinessProbe: #@ data.values.manager.readinessProbe
           volumeMounts:
           - mountPath: /tmp/k8s-webhook-server/serving-certs
             name: cert
             readOnly: true
-          resources:
-            #@ data.values.manager.resources
+          resources: #@ data.values.manager.resources
           securityContext:
             allowPrivilegeEscalation: false
