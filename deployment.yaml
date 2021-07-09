@@ -21,7 +21,7 @@ spec:
       hostNetwork: true
       #@ end
       priorityClassName: #@ data.values.priorityClassName
-      nodeSelector: #@ data.values.imagePullSecrets
+      nodeSelector: #@ data.values.nodeSelector
       tolerations: #@ data.values.tolerations
       affinity: #@ data.values.affinity
       volumes:
