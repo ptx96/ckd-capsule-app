@@ -81,7 +81,6 @@ app.kubernetes.io/instance: #@ v.release.name
 #@ end
 
 #!Create the Capsule TLS Secret name to use
-
 #@ def secretTlsName():
 #@   return fullName() + "-tls"
 #@ end
