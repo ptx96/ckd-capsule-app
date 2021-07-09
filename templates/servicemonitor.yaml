@@ -9,7 +9,7 @@ metadata:
   namespace: #@ data.values.serviceMonitor.namespace if data.values.serviceMonitor.namespace else data.values.release.namespace
   labels: #@ labels()
   #@ if data.values.serviceMonitor.labels:
-  #@  return data.values.serviceMonitor.labels
+  #@   data.values.serviceMonitor.labels
   #@ end
 spec:
   endpoints:
