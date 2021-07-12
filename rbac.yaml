@@ -34,7 +34,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: #@ fullName() + "-metrics-reader"
+  name: #@ fullName() + "-proxy-rolebinding"
   labels: #@ labels()
 roleRef:
   apiGroup: rbac.authorization.k8s.io
