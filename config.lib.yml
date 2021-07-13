@@ -54,20 +54,20 @@ app.kubernetes.io/instance: #@ v.release.name
 #!Create the manager fully-qualified Docker image to use
 #@ def managerFullyQualifiedDockerImage():
 #@   if v.manager.image.tag:
-#@     return v.manager.image.repository + ":" + v.manager.image.tag
+#@     return v.manager.image.repository + ":v" + v.manager.image.tag
 #@   else:
-#@     return v.manager.image.repository + ":" + v.chart.appVersion
+#@     return v.manager.image.repository + ":v" + v.chart.appVersion
 #@   end
 #@ end
 
 #!Create the proxy fully-qualified Docker image to use
 #@ def proxyFullyQualifiedDockerImage():
-#@   return v.proxy.image.repository + ":" + v.proxy.image.tag
+#@   return v.proxy.image.repository + ":v" + v.proxy.image.tag
 #@ end
 
 #!Create the jobs fully-qualified Docker image to use
 #@ def jobsFullyQualifiedDockerImage():
-#@   return v.jobs.image.repository + ":" + v.jobs.image.tag
+#@   return v.jobs.image.repository + ":v" + v.jobs.image.tag
 #@ end
 
 #!Create the Capsule Deployment name to use
