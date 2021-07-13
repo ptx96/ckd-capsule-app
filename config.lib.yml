@@ -1,0 +1,86 @@
+#@ load("@ytt:data", "data")
+
+#! Avoid to use "data.values" each time.
+#@ v = data.values
+
+#!Expand the name of the chart.
+#@ def name():
+#@   return v.chart.name[0:63].rstrip("-")
+#@ end
+
+#!Create a default fully qualified app name.
+#!We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+#!If release name contains chart name it will be used as a full name.
+#@ def fullName():
+#@   name = v.chart.name
+#@   if name in v.release.name:
+#@     return v.release.name[0:63].rstrip("-")
+#@   else:
+#@     return (v.release.name + "-" + name)[0:63].rstrip("-")
+#@   end
+#@ end
+
+#!Create chart name and version as used by the chart label.
+#@ def chart():
+#@   return (v.chart.name + "-" + v.chart.version)[0:63].replace("+", "-").rstrip("-")
+#@ end
+
+#!Common labels
+#@ def labels():
+#! helm.sh/chart: #@ chart()
+#@   if v.chart.appVersion:
+app.kubernetes.io/name: #@ name()
+app.kubernetes.io/instance: #@ v.release.name
+app.kubernetes.io/version: #@ v.chart.appVersion
+#@   end
+app.kubernetes.io/managed-by: #@ v.release.service
+#@ end
+
+#!Selector labels
+#@ def selectorLabels():
+app.kubernetes.io/name: #@ name()
+app.kubernetes.io/instance: #@ v.release.name
+#@ end
+
+#!Create the name of the service account to use
+#@ def serviceAccountName():
+#@   if v.serviceAccount.create:
+#@     return fullName()
+#@   else:
+#@     return v.serviceAccount.name
+#@   end
+#@ end
+
+#!Create the manager fully-qualified Docker image to use
+#@ def managerFullyQualifiedDockerImage():
+#@   if v.manager.image.tag:
+#@     return v.manager.image.repository + ":v" + v.manager.image.tag
+#@   else:
+#@     return v.manager.image.repository + ":v" + v.chart.appVersion
+#@   end
+#@ end
+
+#!Create the proxy fully-qualified Docker image to use
+#@ def proxyFullyQualifiedDockerImage():
+#@   return v.proxy.image.repository + ":v" + v.proxy.image.tag
+#@ end
+
+#!Create the jobs fully-qualified Docker image to use
+#@ def jobsFullyQualifiedDockerImage():
+#@   return v.jobs.image.repository + ":v" + v.jobs.image.tag
+#@ end
+
+#!Create the Capsule Deployment name to use
+#@ def deploymentName():
+#@   return fullName() + "-controller-manager"
+#@ end
+
+#!Create the Capsule CA Secret name to use
+#@ def secretCaName():
+#@   return fullName() + "-ca"
+#@ end
+
+#!Create the Capsule TLS Secret name to use
+#@ def secretTlsName():
+#@   return fullName() + "-tls"
+#@ end

@@ -1,16 +1,22 @@
 #@data/values
 ---
-
 #! Default values for capsule.
 #! This is a YAML-formatted file.
 #! Declare variables to be passed into your templates.
 
+release:
+  name: capsule
+  service: kapp
+  namespace: capsule-system
+chart:
+  name: capsule
+  appVersion: 0.1.0-rc3
+  version: 0.0.19
 manager:
   image:
     repository: quay.io/clastix/capsule
     pullPolicy: IfNotPresent
     tag: ''
-
   #! Specifies if the container should be started in hostNetwork mode.
   #!
   #! Required for use in some managed kubernetes clusters (such as AWS EKS) with custom
@@ -47,6 +53,12 @@ jobs:
     repository: quay.io/clastix/kubectl
     pullPolicy: IfNotPresent
     tag: "v1.20.7"
+proxy:
+  image:
+    repository: ""
+    pullPolicy: ""
+    tag: ""
+
 mutatingWebhooksTimeoutSeconds: 30
 validatingWebhooksTimeoutSeconds: 30
 imagePullSecrets: []
@@ -69,7 +81,7 @@ podSecurityPolicy:
   enabled: false
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   #! Install the ServiceMonitor into a different Namespace, as the monitoring stack one (default: the release one)
   namespace:
   #! Assign additional labels according to Prometheus' serviceMonitorSelector matching labels
@@ -79,3 +91,4 @@ serviceMonitor:
   serviceAccount:
     name: capsule
     namespace: capsule-system
+

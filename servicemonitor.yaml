@@ -1,0 +1,25 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "name", "fullName", "chart", "labels", "selectorLabels")
+
+#@ if data.values.serviceMonitor:
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: #@ fullName() + "-monitor"
+  namespace: #@ data.values.serviceMonitor.namespace if data.values.serviceMonitor.namespace else data.values.release.namespace
+  labels: #@ labels()
+  #@ if data.values.serviceMonitor.labels:
+  #@   data.values.serviceMonitor.labels
+  #@ end
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+    path: /metrics
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels: #@ labels()
+  namespaceSelector:
+    matchNames:
+      - #@ data.values.release.namespace
+#@ end

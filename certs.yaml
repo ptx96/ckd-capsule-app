@@ -1,0 +1,9 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "labels", "secretTlsName")
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels: #@ labels()
+  name: #@ secretTlsName()
+data:

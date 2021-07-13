@@ -1,0 +1,17 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "name", "fullName", "chart", "labels", "selectorLabels")
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: #@ fullName() + "-controller-manager-metrics-service"
+  labels: #@ labels()
+spec:
+  ports:
+  - port: 8080
+    name: metrics
+    protocol: TCP
+    targetPort: 8080
+  selector: #@ selectorLabels()
+  sessionAffinity: None
+  type: ClusterIP

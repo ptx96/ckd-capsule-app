@@ -1,0 +1,62 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "deploymentName", "fullName", "selectorLabels", "labels", "serviceAccountName", "managerFullyQualifiedDockerImage")
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #@ deploymentName()
+  labels: #@ labels()
+spec:
+  replicas: #@ data.values.replicaCount
+  selector:
+    matchLabels: #@ selectorLabels()
+  template:
+    metadata:
+      annotations: #@ data.values.podAnnotations
+      labels: #@ selectorLabels()
+    spec:
+      imagePullSecrets: #@ data.values.imagePullSecrets
+      serviceAccountName: #@ serviceAccountName()
+      #@ if data.values.manager.hostNetwork:
+      hostNetwork: true
+      #@ end
+      priorityClassName: #@ data.values.priorityClassName
+      nodeSelector: #@ data.values.nodeSelector
+      tolerations: #@ data.values.tolerations
+      affinity: #@ data.values.affinity
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: #@ fullName()+"-tls"
+      containers:
+        - name: manager
+          command:
+          - /manager
+          args:
+          - --enable-leader-election
+          - #@ "--zap-log-level=" + data.values.manager.options.logLevel if data.values.manager.options.logLevel else 4
+          - --configuration-name=default
+          image: #@ managerFullyQualifiedDockerImage()
+          imagePullPolicy: #@ data.values.manager.image.pullPolicy
+          env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          ports:
+            - name: webhook-server
+              containerPort: 9443
+              protocol: TCP
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe: #@ data.values.manager.livenessProbe
+          readinessProbe: #@ data.values.manager.readinessProbe
+          volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+          resources: #@ data.values.manager.resources
+          securityContext:
+            allowPrivilegeEscalation: false

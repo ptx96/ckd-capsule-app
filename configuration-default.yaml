@@ -1,0 +1,14 @@
+#@ load("@ytt:data", "data")
+
+apiVersion: capsule.clastix.io/v1alpha1
+kind: CapsuleConfiguration
+metadata:
+  name: default
+spec:
+  forceTenantPrefix: #@ data.values.manager.options.forceTenantPrefix
+  userGroups:
+  #@ for/end item in data.values.manager.options.capsuleUserGroups:
+  - #@ item
+  protectedNamespaceRegex: #@ data.values.manager.options.protectedNamespaceRegex
+  allowTenantIngressHostnamesCollision: #@ data.values.manager.options.allowTenantIngressHostnamesCollision
+  allowIngressHostnameCollision: #@ data.values.manager.options.allowIngressHostnameCollision
