@@ -35,7 +35,7 @@ spec:
           - /manager
           args:
           - --enable-leader-election
-          - --zap-log-level={{ default 4 .Values.manager.options.logLevel }}
+          - #@ "--zap-log-level=" + data.values.manager.options.logLevel if data.values.manager.options.logLevel else 4
           - --configuration-name=default
           image: #@ managerFullyQualifiedDockerImage()
           imagePullPolicy: #@ data.values.manager.image.pullPolicy
