@@ -89,6 +89,5 @@ serviceMonitor:
   annotations: {}
   matchLabels: {}
   serviceAccount:
-    name: capsule
-    namespace: capsule-system
-
+    name: prometheus-k8s
+    namespace: monitoring
