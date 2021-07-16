@@ -1,5 +1,5 @@
 #@ load("@ytt:data", "data")
-#@ load("config.lib.yml", "secretTlsName", "secretCaName")
+#@ load("config.lib.yml", "secretTlsName", "secretCaName", "fullName")
 
 apiVersion: v1
 kind: ConfigMap
