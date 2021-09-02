@@ -5,6 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.5.0
+  creationTimestamp: null
   name: tenants.capsule.clastix.io
 spec:
   conversion:
@@ -233,11 +234,15 @@ spec:
                               items:
                                 description: NetworkPolicyPort describes a port to allow traffic on
                                 properties:
+                                  endPort:
+                                    description: If set, indicates that the range of ports from port to endPort, inclusive, should be allowed by the policy. This field cannot be defined if the port field is not defined or if the port field is defined as a named (string) port. The endPort must be equal or greater than port. This feature is in Beta state and is enabled by default. It can be disabled using the Feature Gate "NetworkPolicyEndPort".
+                                    format: int32
+                                    type: integer
                                   port:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers.
+                                    description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers. If present, only traffic on the specified protocol AND port will be matched.
                                     x-kubernetes-int-or-string: true
                                   protocol:
                                     default: TCP
@@ -419,11 +424,15 @@ spec:
                               items:
                                 description: NetworkPolicyPort describes a port to allow traffic on
                                 properties:
+                                  endPort:
+                                    description: If set, indicates that the range of ports from port to endPort, inclusive, should be allowed by the policy. This field cannot be defined if the port field is not defined or if the port field is defined as a named (string) port. The endPort must be equal or greater than port. This feature is in Beta state and is enabled by default. It can be disabled using the Feature Gate "NetworkPolicyEndPort".
+                                    format: int32
+                                    type: integer
                                   port:
                                     anyOf:
                                       - type: integer
                                       - type: string
-                                    description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers.
+                                    description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers. If present, only traffic on the specified protocol AND port will be matched.
                                     x-kubernetes-int-or-string: true
                                   protocol:
                                     default: TCP
@@ -464,9 +473,9 @@ spec:
                             type: object
                         type: object
                       policyTypes:
-                        description: List of rule types that the NetworkPolicy relates to. Valid options are "Ingress", "Egress", or "Ingress,Egress". If this field is not specified, it will default based on the existence of Ingress or Egress rules; policies that contain an Egress section are assumed to affect Egress, and all policies (whether or not they contain an Ingress section) are assumed to affect Ingress. If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ]. Likewise, if you want to write a policy that specifies that no egress is allowed, you must specify a policyTypes value that include "Egress" (since such a policy would not include an Egress section and would otherwise default to just [ "Ingress" ]). This field is beta-level in 1.8
+                        description: List of rule types that the NetworkPolicy relates to. Valid options are ["Ingress"], ["Egress"], or ["Ingress", "Egress"]. If this field is not specified, it will default based on the existence of Ingress or Egress rules; policies that contain an Egress section are assumed to affect Egress, and all policies (whether or not they contain an Ingress section) are assumed to affect Ingress. If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ]. Likewise, if you want to write a policy that specifies that no egress is allowed, you must specify a policyTypes value that include "Egress" (since such a policy would not include an Egress section and would otherwise default to just [ "Ingress" ]). This field is beta-level in 1.8
                         items:
-                          description: Policy Type string describes the NetworkPolicy type This type is beta-level in 1.8
+                          description: PolicyType string describes the NetworkPolicy type This type is beta-level in 1.8
                           type: string
                         type: array
                     required:
@@ -576,14 +585,14 @@ spec:
       served: true
       storage: false
       subresources:
-        status: { }
+        status: {}
     - additionalPrinterColumns:
         - description: The actual state of the Tenant
           jsonPath: .status.state
           name: State
           type: string
         - description: The max amount of Namespaces can be created
-          jsonPath: .spec.namespaceQuota
+          jsonPath: .spec.namespaceOptions.quota
           name: Namespace quota
           type: integer
         - description: The total amount of Namespaces in use
@@ -615,6 +624,7 @@ spec:
               description: TenantSpec defines the desired state of Tenant
               properties:
                 additionalRoleBindings:
+                  description: Specifies additional RoleBindings assigned to the Tenant. Capsule will ensure that all namespaces in the Tenant always contain the RoleBinding for the given ClusterRole. Optional.
                   items:
                     properties:
                       clusterRoleName:
@@ -647,6 +657,7 @@ spec:
                     type: object
                   type: array
                 containerRegistries:
+                  description: Specifies the trusted Image Registries assigned to the Tenant. Capsule assures that all Pods resources created in the Tenant can use only one of the allowed trusted registries. Optional.
                   properties:
                     allowed:
                       items:
@@ -655,20 +666,8 @@ spec:
                     allowedRegex:
                       type: string
                   type: object
-                enableNodePorts:
-                  default: true
-                  type: boolean
-                externalServiceIPs:
-                  properties:
-                    allowed:
-                      items:
-                        pattern: ^([0-9]{1,3}.){3}[0-9]{1,3}(/([0-9]|[1-2][0-9]|3[0-2]))?$
-                        type: string
-                      type: array
-                  required:
-                    - allowed
-                  type: object
                 imagePullPolicies:
+                  description: Specify the allowed values for the imagePullPolicies option in Pod resources. Capsule assures that all Pod resources created in the Tenant can use only one of the allowed policy. Optional.
                   items:
                     enum:
                       - Always
@@ -676,25 +675,41 @@ spec:
                       - IfNotPresent
                     type: string
                   type: array
-                ingressClasses:
+                ingressOptions:
+                  description: Specifies options for the Ingress resources, such as allowed hostnames and IngressClass. Optional.
                   properties:
-                    allowed:
-                      items:
-                        type: string
-                      type: array
-                    allowedRegex:
-                      type: string
-                  type: object
-                ingressHostnames:
-                  properties:
-                    allowed:
-                      items:
-                        type: string
-                      type: array
-                    allowedRegex:
+                    allowedClasses:
+                      description: Specifies the allowed IngressClasses assigned to the Tenant. Capsule assures that all Ingress resources created in the Tenant can use only one of the allowed IngressClasses. Optional.
+                      properties:
+                        allowed:
+                          items:
+                            type: string
+                          type: array
+                        allowedRegex:
+                          type: string
+                      type: object
+                    allowedHostnames:
+                      description: Specifies the allowed hostnames in Ingresses for the given Tenant. Capsule assures that all Ingress resources created in the Tenant can use only one of the allowed hostnames. Optional.
+                      properties:
+                        allowed:
+                          items:
+                            type: string
+                          type: array
+                        allowedRegex:
+                          type: string
+                      type: object
+                    hostnameCollisionScope:
+                      default: Disabled
+                      description: "Defines the scope of hostname collision check performed when Tenant Owners create Ingress with allowed hostnames. \n - Cluster: disallow the creation of an Ingress if the pair hostname and path is already used across the Namespaces managed by Capsule. \n - Tenant: disallow the creation of an Ingress if the pair hostname and path is already used across the Namespaces of the Tenant. \n - Namespace: disallow the creation of an Ingress if the pair hostname and path is already used in the Ingress Namespace. \n Optional."
+                      enum:
+                        - Cluster
+                        - Tenant
+                        - Namespace
+                        - Disabled
                       type: string
                   type: object
                 limitRanges:
+                  description: Specifies the NetworkPolicies assigned to the Tenant. The assigned NetworkPolicies are inherited by any namespace created in the Tenant. Optional.
                   properties:
                     items:
                       items:
@@ -762,22 +777,29 @@ spec:
                         type: object
                       type: array
                   type: object
-                namespaceQuota:
-                  format: int32
-                  minimum: 1
-                  type: integer
-                namespacesMetadata:
+                namespaceOptions:
+                  description: Specifies options for the Namespaces, such as additional metadata or maximum number of namespaces allowed for that Tenant. Once the namespace quota assigned to the Tenant has been reached, the Tenant owner cannot create further namespaces. Optional.
                   properties:
-                    additionalAnnotations:
-                      additionalProperties:
-                        type: string
+                    additionalMetadata:
+                      description: Specifies additional labels and annotations the Capsule operator places on any Namespace resource in the Tenant. Optional.
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          type: object
                       type: object
-                    additionalLabels:
-                      additionalProperties:
-                        type: string
-                      type: object
+                    quota:
+                      description: Specifies the maximum number of namespaces allowed for that Tenant. Once the namespace quota assigned to the Tenant has been reached, the Tenant owner cannot create further namespaces. Optional.
+                      format: int32
+                      minimum: 1
+                      type: integer
                   type: object
                 networkPolicies:
+                  description: Specifies the NetworkPolicies assigned to the Tenant. The assigned NetworkPolicies are inherited by any namespace created in the Tenant. Optional.
                   properties:
                     items:
                       items:
@@ -793,11 +815,15 @@ spec:
                                   items:
                                     description: NetworkPolicyPort describes a port to allow traffic on
                                     properties:
+                                      endPort:
+                                        description: If set, indicates that the range of ports from port to endPort, inclusive, should be allowed by the policy. This field cannot be defined if the port field is not defined or if the port field is defined as a named (string) port. The endPort must be equal or greater than port. This feature is in Beta state and is enabled by default. It can be disabled using the Feature Gate "NetworkPolicyEndPort".
+                                        format: int32
+                                        type: integer
                                       port:
                                         anyOf:
                                           - type: integer
                                           - type: string
-                                        description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers.
+                                        description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers. If present, only traffic on the specified protocol AND port will be matched.
                                         x-kubernetes-int-or-string: true
                                       protocol:
                                         default: TCP
@@ -979,11 +1005,15 @@ spec:
                                   items:
                                     description: NetworkPolicyPort describes a port to allow traffic on
                                     properties:
+                                      endPort:
+                                        description: If set, indicates that the range of ports from port to endPort, inclusive, should be allowed by the policy. This field cannot be defined if the port field is not defined or if the port field is defined as a named (string) port. The endPort must be equal or greater than port. This feature is in Beta state and is enabled by default. It can be disabled using the Feature Gate "NetworkPolicyEndPort".
+                                        format: int32
+                                        type: integer
                                       port:
                                         anyOf:
                                           - type: integer
                                           - type: string
-                                        description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers.
+                                        description: The port on the given protocol. This can either be a numerical or named port on a pod. If this field is not provided, this matches all port names and numbers. If present, only traffic on the specified protocol AND port will be matched.
                                         x-kubernetes-int-or-string: true
                                       protocol:
                                         default: TCP
@@ -1024,9 +1054,9 @@ spec:
                                 type: object
                             type: object
                           policyTypes:
-                            description: List of rule types that the NetworkPolicy relates to. Valid options are "Ingress", "Egress", or "Ingress,Egress". If this field is not specified, it will default based on the existence of Ingress or Egress rules; policies that contain an Egress section are assumed to affect Egress, and all policies (whether or not they contain an Ingress section) are assumed to affect Ingress. If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ]. Likewise, if you want to write a policy that specifies that no egress is allowed, you must specify a policyTypes value that include "Egress" (since such a policy would not include an Egress section and would otherwise default to just [ "Ingress" ]). This field is beta-level in 1.8
+                            description: List of rule types that the NetworkPolicy relates to. Valid options are ["Ingress"], ["Egress"], or ["Ingress", "Egress"]. If this field is not specified, it will default based on the existence of Ingress or Egress rules; policies that contain an Egress section are assumed to affect Egress, and all policies (whether or not they contain an Ingress section) are assumed to affect Ingress. If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ]. Likewise, if you want to write a policy that specifies that no egress is allowed, you must specify a policyTypes value that include "Egress" (since such a policy would not include an Egress section and would otherwise default to just [ "Ingress" ]). This field is beta-level in 1.8
                             items:
-                              description: Policy Type string describes the NetworkPolicy type This type is beta-level in 1.8
+                              description: PolicyType string describes the NetworkPolicy type This type is beta-level in 1.8
                               type: string
                             type: array
                         required:
@@ -1037,20 +1067,24 @@ spec:
                 nodeSelector:
                   additionalProperties:
                     type: string
+                  description: Specifies the label to control the placement of pods on a given pool of worker nodes. All namesapces created within the Tenant will have the node selector annotation. This annotation tells the Kubernetes scheduler to place pods on the nodes having the selector label. Optional.
                   type: object
                 owners:
+                  description: Specifies the owners of the Tenant. Mandatory.
                   items:
-                    description: OwnerSpec defines tenant owner name and kind
                     properties:
                       kind:
+                        description: Kind of tenant owner. Possible values are "User", "Group", and "ServiceAccount"
                         enum:
                           - User
                           - Group
                           - ServiceAccount
                         type: string
                       name:
+                        description: Name of tenant owner.
                         type: string
                       proxySettings:
+                        description: Proxy settings for tenant owner.
                         items:
                           properties:
                             kind:
@@ -1058,6 +1092,7 @@ spec:
                                 - Nodes
                                 - StorageClasses
                                 - IngressClasses
+                                - PriorityClasses
                               type: string
                             operations:
                               items:
@@ -1078,6 +1113,7 @@ spec:
                     type: object
                   type: array
                 priorityClasses:
+                  description: Specifies the allowed priorityClasses assigned to the Tenant. Capsule assures that all Pods resources created in the Tenant can use only one of the allowed PriorityClasses. Optional.
                   properties:
                     allowed:
                       items:
@@ -1087,6 +1123,7 @@ spec:
                       type: string
                   type: object
                 resourceQuotas:
+                  description: Specifies a list of ResourceQuota resources assigned to the Tenant. The assigned values are inherited by any namespace created in the Tenant. The Capsule operator aggregates ResourceQuota at Tenant level, so that the hard quota is never crossed for the given Tenant. This permits the Tenant owner to consume resources in the Tenant regardless of the namespace. Optional.
                   properties:
                     items:
                       items:
@@ -1134,19 +1171,59 @@ spec:
                             type: array
                         type: object
                       type: array
+                    scope:
+                      default: Tenant
+                      description: Define if the Resource Budget should compute resource across all Namespaces in the Tenant or individually per cluster. Default is Tenant
+                      enum:
+                        - Tenant
+                        - Namespace
+                      type: string
                   type: object
-                servicesMetadata:
+                serviceOptions:
+                  description: Specifies options for the Service, such as additional metadata or block of certain type of Services. Optional.
                   properties:
-                    additionalAnnotations:
-                      additionalProperties:
-                        type: string
+                    additionalMetadata:
+                      description: Specifies additional labels and annotations the Capsule operator places on any Service resource in the Tenant. Optional.
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          type: object
                       type: object
-                    additionalLabels:
-                      additionalProperties:
-                        type: string
+                    allowedServices:
+                      description: Block or deny certain type of Services. Optional.
+                      properties:
+                        externalName:
+                          default: true
+                          description: Specifies if ExternalName service type resources are allowed for the Tenant. Default is true. Optional.
+                          type: boolean
+                        loadBalancer:
+                          default: true
+                          description: Specifies if LoadBalancer service type resources are allowed for the Tenant. Default is true. Optional.
+                          type: boolean
+                        nodePort:
+                          default: true
+                          description: Specifies if NodePort service type resources are allowed for the Tenant. Default is true. Optional.
+                          type: boolean
+                      type: object
+                    externalIPs:
+                      description: Specifies the external IPs that can be used in Services with type ClusterIP. An empty list means no IPs are allowed. Optional.
+                      properties:
+                        allowed:
+                          items:
+                            pattern: ^([0-9]{1,3}.){3}[0-9]{1,3}(/([0-9]|[1-2][0-9]|3[0-2]))?$
+                            type: string
+                          type: array
+                      required:
+                        - allowed
                       type: object
                   type: object
                 storageClasses:
+                  description: Specifies the allowed StorageClasses assigned to the Tenant. Capsule assures that all PersistentVolumeClaim resources created in the Tenant can use only one of the allowed StorageClasses. Optional.
                   properties:
                     allowed:
                       items:
@@ -1159,19 +1236,22 @@ spec:
                 - owners
               type: object
             status:
-              description: TenantStatus defines the observed state of Tenant
+              description: Returns the observed state of the Tenant
               properties:
                 namespaces:
+                  description: List of namespaces assigned to the Tenant.
                   items:
                     type: string
                   type: array
                 size:
+                  description: How many namespaces are assigned to the Tenant.
                   type: integer
                 state:
-                  default: active
+                  default: Active
+                  description: The operational state of the Tenant. Possible values are "Active", "Cordoned".
                   enum:
-                    - cordoned
-                    - active
+                    - Cordoned
+                    - Active
                   type: string
               required:
                 - size
@@ -1181,7 +1261,7 @@ spec:
       served: true
       storage: true
       subresources:
-        status: { }
+        status: {}
 status:
   acceptedNames:
     kind: ""

@@ -10,7 +10,7 @@ release:
   namespace: capsule-system
 chart:
   name: capsule
-  appVersion: 0.1.0-rc3
+  appVersion: 0.1.0
   version: 0.0.19
 manager:
   image:
