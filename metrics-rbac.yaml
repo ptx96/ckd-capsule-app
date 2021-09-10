@@ -7,7 +7,7 @@ kind: Role
 metadata:
   labels: #@ labels()
   #@ if data.values.serviceMonitor.labels:
-  #@  return data.values.serviceMonitor.labels
+  #@   data.values.serviceMonitor.labels
   #@ end
   name: #@ fullName() + "-metrics-role"
   namespace: #@ data.values.serviceMonitor.namespace if data.values.serviceMonitor.namespace else data.values.release.namespace
@@ -28,7 +28,7 @@ kind: RoleBinding
 metadata:
   labels: #@ labels()
   #@ if data.values.serviceMonitor.labels:
-  #@  return data.values.serviceMonitor.labels
+  #@   data.values.serviceMonitor.labels
   #@ end
   name: #@ fullName() + "-metrics-rolebinding"
   namespace: #@ data.values.serviceMonitor.namespace if data.values.serviceMonitor.namespace else data.values.release.namespace

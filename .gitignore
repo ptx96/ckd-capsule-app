@@ -1,0 +1,4 @@
+# do not track temporary files
+*.tmp
+*.bak
+*.swp

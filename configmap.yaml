@@ -1,0 +1,26 @@
+#@ load("@ytt:data", "data")
+#@ load("config.lib.yml", "secretTlsName", "secretCaName", "fullName")
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: #@ fullName() + "-kapp-config"
+  labels:
+    kapp.k14s.io/config: ""
+data:
+  config.yml: |
+    apiVersion: kapp.k14s.io/v1alpha1
+    kind: Config
+    rebaseRules:
+    - path: [data]
+      type: copy
+      sources: [existing, new]
+      resourceMatchers:
+      - kindNamespaceNameMatcher:
+          kind: Secret
+          namespace: #@ data.values.release.namespace
+          name: #@ secretTlsName()
+      - kindNamespaceNameMatcher:
+          kind: Secret
+          namespace: #@ data.values.release.namespace
+          name: #@ secretCaName()
