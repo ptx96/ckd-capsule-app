@@ -24,3 +24,15 @@ data:
           kind: Secret
           namespace: #@ data.values.release.namespace
           name: #@ secretCaName()
+    - path: [webhooks, {allIndexes: true}, clientConfig, caBundle]
+      type: copy
+      sources: [existing, new]
+      resourceMatchers:
+      - kindNamespaceNameMatcher:
+          kind: MutatingWebhookConfiguration
+          namespace: #@ data.values.release.namespace
+          name: #@ fullName() + "-mutating-webhook-configuration"
+      - kindNamespaceNameMatcher:
+          kind: ValidatingWebhookConfiguration
+          namespace: #@ data.values.release.namespace
+          name: #@ fullName() + "-validating-webhook-configuration"
