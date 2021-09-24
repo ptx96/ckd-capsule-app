@@ -34,4 +34,4 @@ webhooks:
       - namespaces
       scope: '*'
   sideEffects: NoneOnDryRun
-  timeoutSeconds: #@ data.values.validatingWebhooksTimeoutSeconds
+  timeoutSeconds: #@ data.values.mutatingWebhooksTimeoutSeconds
