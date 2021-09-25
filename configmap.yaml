@@ -1,6 +1,44 @@
 #@ load("@ytt:data", "data")
 #@ load("config.lib.yml", "secretTlsName", "secretCaName", "fullName")
 
+#@ def config_yml():
+apiVersion: kapp.k14s.io/v1alpha1
+kind: Config
+rebaseRules:
+- path: [data]
+  type: copy
+  sources: [existing, new]
+  resourceMatchers:
+  - kindNamespaceNameMatcher:
+      kind: Secret
+      namespace: #@ data.values.release.namespace
+      name: #@ secretTlsName()
+  - kindNamespaceNameMatcher:
+      kind: Secret
+      namespace: #@ data.values.release.namespace
+      name: #@ secretCaName()
+- path: [webhooks, {allIndexes: true}, clientConfig, caBundle]
+  type: copy
+  sources: [existing, new]
+  resourceMatchers:
+  - kindNamespaceNameMatcher:
+      kind: MutatingWebhookConfiguration
+      namespace: #@ data.values.release.namespace
+      name: #@ fullName() + "-mutating-webhook-configuration"
+  - kindNamespaceNameMatcher:
+      kind: ValidatingWebhookConfiguration
+      namespace: #@ data.values.release.namespace
+      name: #@ fullName() + "-validating-webhook-configuration"
+- path: [spec, conversion, webhook, clientConfig, caBundle]
+  type: copy
+  sources: [existing, new]
+  resourceMatchers:
+  - kindNamespaceNameMatcher:
+      kind: CustomResourceDefinition
+      namespace: #@ data.values.release.namespace
+      name: tenants.capsule.clastix.io
+#@ end
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,31 +46,4 @@ metadata:
   labels:
     kapp.k14s.io/config: ""
 data:
-  config.yml: |
-    apiVersion: kapp.k14s.io/v1alpha1
-    kind: Config
-    rebaseRules:
-    - path: [data]
-      type: copy
-      sources: [existing, new]
-      resourceMatchers:
-      - kindNamespaceNameMatcher:
-          kind: Secret
-          namespace: #@ data.values.release.namespace
-          name: #@ secretTlsName()
-      - kindNamespaceNameMatcher:
-          kind: Secret
-          namespace: #@ data.values.release.namespace
-          name: #@ secretCaName()
-    - path: [webhooks, {allIndexes: true}, clientConfig, caBundle]
-      type: copy
-      sources: [existing, new]
-      resourceMatchers:
-      - kindNamespaceNameMatcher:
-          kind: MutatingWebhookConfiguration
-          namespace: #@ data.values.release.namespace
-          name: #@ fullName() + "-mutating-webhook-configuration"
-      - kindNamespaceNameMatcher:
-          kind: ValidatingWebhookConfiguration
-          namespace: #@ data.values.release.namespace
-          name: #@ fullName() + "-validating-webhook-configuration"
+  config.yml: #@ config_yml()
