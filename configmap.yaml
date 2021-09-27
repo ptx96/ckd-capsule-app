@@ -1,5 +1,6 @@
 #@ load("@ytt:data", "data")
-#@ load("config.lib.yml", "secretTlsName", "secretCaName", "fullName")
+#@ load("@ytt:yaml", "yaml")
+#@ load("config.lib.yaml", "secretTlsName", "secretCaName", "fullName")
 
 #@ def config_yml():
 apiVersion: kapp.k14s.io/v1alpha1
@@ -46,4 +47,4 @@ metadata:
   labels:
     kapp.k14s.io/config: ""
 data:
-  config.yml: #@ config_yml()
+  config.yml: #@ yaml.encode(config_yml())
