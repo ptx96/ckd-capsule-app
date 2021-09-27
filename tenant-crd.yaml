@@ -12,6 +12,7 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
+        caBundle: Cg==
         service:
           namespace: #@ data.values.release.namespace
           name: #@ data.values.release.name + "-webhook-service"
