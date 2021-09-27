@@ -1,5 +1,5 @@
 #@ load("@ytt:data", "data")
-#@ load("config.lib.yml", "labels", "secretCaName")
+#@ load("config.lib.yaml", "labels", "secretCaName")
 
 apiVersion: v1
 kind: Secret

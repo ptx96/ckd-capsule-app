@@ -1,5 +1,5 @@
 #@ load("@ytt:data", "data")
-#@ load("config.lib.yml", "labels")
+#@ load("config.lib.yaml", "labels")
 
 apiVersion: capsule.clastix.io/v1alpha1
 kind: CapsuleConfiguration

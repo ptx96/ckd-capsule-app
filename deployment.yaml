@@ -1,5 +1,5 @@
 #@ load("@ytt:data", "data")
-#@ load("config.lib.yml", "deploymentName", "fullName", "selectorLabels", "labels", "serviceAccountName", "managerFullyQualifiedDockerImage")
+#@ load("config.lib.yaml", "deploymentName", "fullName", "selectorLabels", "labels", "serviceAccountName", "managerFullyQualifiedDockerImage")
 
 apiVersion: apps/v1
 kind: Deployment
