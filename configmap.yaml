@@ -6,9 +6,10 @@
 apiVersion: kapp.k14s.io/v1alpha1
 kind: Config
 rebaseRules:
+
 - path: [data]
   type: copy
-  sources: [existing, new]
+  sources: [existing]
   resourceMatchers:
   - kindNamespaceNameMatcher:
       kind: Secret
@@ -18,25 +19,20 @@ rebaseRules:
       kind: Secret
       namespace: #@ data.values.release.namespace
       name: #@ secretCaName()
+
 - path: [webhooks, {allIndexes: true}, clientConfig, caBundle]
   type: copy
-  sources: [existing, new]
+  sources: [existing]
   resourceMatchers:
-  - kindNamespaceNameMatcher:
-      kind: MutatingWebhookConfiguration
-      namespace: #@ data.values.release.namespace
-      name: #@ fullName() + "-mutating-webhook-configuration"
-  - kindNamespaceNameMatcher:
-      kind: ValidatingWebhookConfiguration
-      namespace: #@ data.values.release.namespace
-      name: #@ fullName() + "-validating-webhook-configuration"
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1, kind: MutatingWebhookConfiguration}
+  - apiVersionKindMatcher: {apiVersion: admissionregistration.k8s.io/v1, kind: ValidatingWebhookConfiguration}
+
 - path: [spec, conversion, webhook, clientConfig, caBundle]
   type: copy
-  sources: [existing, new]
+  sources: [existing]
   resourceMatchers:
   - kindNamespaceNameMatcher:
       kind: CustomResourceDefinition
-      namespace: #@ data.values.release.namespace
       name: tenants.capsule.clastix.io
 #@ end
 
