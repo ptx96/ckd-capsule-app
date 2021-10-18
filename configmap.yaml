@@ -40,6 +40,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: #@ fullName() + "-kapp-config"
+  namespace: #@ data.values.release.namespace
   labels:
     kapp.k14s.io/config: ""
 data:

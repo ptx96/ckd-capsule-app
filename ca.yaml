@@ -6,4 +6,5 @@ kind: Secret
 metadata:
   labels: #@ labels()
   name: #@ secretCaName()
+  namespace: #@ data.values.release.namespace
 data:

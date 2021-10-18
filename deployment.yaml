@@ -5,6 +5,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: #@ deploymentName()
+  namespace: #@ data.values.release.namespace
   labels: #@ labels()
 spec:
   replicas: #@ data.values.replicaCount
