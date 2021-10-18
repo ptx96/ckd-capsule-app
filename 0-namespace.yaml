@@ -1,0 +1,8 @@
+#@ load("@ytt:data", "data")
+
+#@ if/end data.values.release.namespace != "default":
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ data.values.release.namespace
