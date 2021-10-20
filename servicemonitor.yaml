@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 #@ load("config.lib.yaml", "name", "fullName", "chart", "labels", "selectorLabels")
 
-#@ if data.values.serviceMonitor:
+#@ if data.values.serviceMonitor.enabled:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
